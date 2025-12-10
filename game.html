@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirkuit Cahaya - Permainan Memori</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #06b6d4, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .game-box {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+            transition: transform 1000ms ease;
+        }
+
+        .light {
+            aspect-ratio: 1;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background-color: #334155;
+            cursor: pointer;
+            transition: all 100ms ease;
+            font-size: 0;
+        }
+
+        .light:hover:not(:disabled) {
+            background-color: #475569;
+        }
+
+        .light:disabled {
+            cursor: not-allowed;
+        }
+
+        .light.active {
+            box-shadow: 0 0 30px currentColor, inset 0 0 15px rgba(255, 255, 255, 0.5);
+            filter: brightness(1.6) saturate(1.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stat {
+            background: #334155;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #06b6d4;
+        }
+
+        .stat-value.mistakes {
+            color: #f87171;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 200ms ease;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #06b6d4, #3b82f6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 15px 25px rgba(6, 182, 212, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .status-text {
+            text-align: center;
+            color: #cbd5e1;
+            font-weight: 600;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 8px;
+            min-height: 28px;
+            display: block;
+            line-height: 1.3;
+        }
+
+        .grid-stats-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .game-over-box {
+            background: #334155;
+            border: 1px solid #f87171;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .game-over-label {
+            color: #f87171;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .game-over-score {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .game-over-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #06b6d4;
+        }
+
+        .instructions {
+            margin-top: 32px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .instructions p {
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .instructions strong {
+            color: #06b6d4;
+        }
+
+        .rotation-grids-wrapper {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .rotation-grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rotation-grid-item-label {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .rotation-grid-mini {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            width: 180px;
+        }
+
+        .light-mini {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            background-color: #334155;
+            cursor: pointer;
+            transition: all 100ms ease;
+            font-size: 0;
+        }
+
+        .light-mini:hover:not(:disabled) {
+            background-color: #475569;
+        }
+
+        .light-mini.active {
+            box-shadow: 0 0 20px currentColor, inset 0 0 10px rgba(255, 255, 255, 0.3);
+            filter: brightness(1.3);
+        }
+
+        .menu-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SIRKUIT CAHAYA</h1>
+            <p>Ingat polanya. Kuasai memori Anda.</p>
+        </div>
+
+        <!-- MENU SCREEN -->
+        <div id="menuScreen" class="menu-screen">
+            <div class="instructions" style="margin-top: 0;">
+                <p><strong>🎮 Cara Bermain</strong></p>
+                
+                <p><strong>🎯 Tujuan</strong></p>
+                <p style="margin-left: 16px;">Melatih kemampuan working memory, visual-spatial sketchpad, dan attention.</p>
+                
+                <p><strong>🧠 Sistem Tingkat</strong></p>
+                <p style="margin-left: 16px; margin-bottom: 4px;">• Terdiri dari Level 1–9.</p>
+                <p style="margin-left: 16px;">• Setiap level memiliki jumlah kotak yang harus diingat sesuai dengan level.</p>
+                
+                <p><strong>🔄 Setiap Tingkat terdiri dari 4 Putaran</strong></p>
+                <p style="margin-left: 16px; margin-bottom: 8px;"><strong style="color: #06b6d4;">🔵 Putaran 1 & 2 – Fokus Warna</strong></p>
+                <p style="margin-left: 32px; margin-bottom: 2px;">• Perhatikan dengan saksama warna cahaya saat semua lampu menyala di awal level.</p>
+                <p style="margin-left: 32px; margin-bottom: 2px;">• Fokus pada warna cahaya yang dimaksud di antara beberapa distraksi warna.</p>
+                <p style="margin-left: 32px; margin-bottom: 2px;">• Instruksi warna yang harus dipilih akan muncul di bagian atas layar.</p>
+                <p style="margin-left: 32px;">• Klik warna yang diminta dengan urutan yang benar.</p>
+                
+                <p style="margin-left: 16px; margin-bottom: 8px;"><strong style="color: #8b5cf6;">🟣 Putaran 3 & 4 – Fokus Rotasi</strong></p>
+                <p style="margin-left: 32px; margin-bottom: 2px;">• Perhatikan letak kotak yang memancarkan cahaya.</p>
+                <p style="margin-left: 32px; margin-bottom: 2px;">• Setelah itu, grid akan mati dan berputar secara acak sebesar 90°, 180°, atau 270°.</p>
+                <p style="margin-left: 32px; margin-bottom: 2px;">• Tentukan posisi kotak yang sebelumnya menyala setelah grid diputar.</p>
+                <p style="margin-left: 32px;">• Klik kotak yang sesuai (urutan bebas, fokus pada posisi).</p>
+                
+                <p><strong>⚠️ Aturan Permainan</strong></p>
+                <p style="margin-left: 16px; margin-bottom: 4px;">• Jika salah menekan kotak, akan muncul tanda ❌ di kotak yang Anda pilih.</p>
+                <p style="margin-left: 16px; margin-bottom: 4px;">• Maksimal kesalahan adalah 3 kali. Jika sudah salah 3 kali, game akan berakhir.</p>
+                <p style="margin-left: 16px; margin-bottom: 4px;">• Tersedia timer pengerjaan 30 detik per round, namun permainan tetap bisa dilanjutkan meskipun waktu habis.</p>
+                <p style="margin-left: 16px;">• Tekan tombol MULAI ULANG untuk kembali ke menu awal dan memulai permainan ulang.</p>
+            </div>
+            <button class="btn-primary" onclick="startPracticeMode()" style="width: 100%; padding: 16px; margin-bottom: 12px; background: linear-gradient(90deg, #10b981, #059669);">🎓 MODE LATIHAN</button>
+            <button class="btn-primary" onclick="startGame()" style="width: 100%; padding: 16px;">MULAI PERMAINAN</button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="gameScreen" class="game-screen">
+            <div class="game-box">
+                <div class="status-text" id="statusText"></div>
+                <div class="grid-stats-wrapper">
+                    <div class="grid" id="gameGrid"></div>
+                    <div id="rotationGridsContainer" style="display:none; margin-bottom: 24px;"></div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-label">Tingkat</div>
+                            <div class="stat-value" id="levelStat">1</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Putaran</div>
+                            <div class="stat-value" id="roundStat">-</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Kesalahan</div>
+                            <div class="stat-value mistakes" id="mistakesStat">0/2</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div id="gameControls">
+                    <button class="btn-primary" id="stopBtn" style="background: linear-gradient(90deg, #f87171, #ef4444); margin-top: 8px; display: none;" onclick="stopGame()">MULAI ULANG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GAME STATE ====================
+        let level = 1;
+        let roundInLevel = 1; // 1, 2, 3, or 4 (per level)
+        let gameOverRound = 1; // Track which round caused game over
+        let gameState = 'idle'; // idle, playing, watching, input, correct, gameOver
+        let mistakes = 0;
+        let score = 0;
+        let userSequence = [];
+        let correctSequence = [];
+        let timeElapsed = 0;
+        let timerInterval = null;
+        let levelColor = '#dc2626';
+        let currentRotation = 0;
+        let roundTimes = []; // Menyimpan waktu setiap round
+        let isPracticeMode = false; // Track if player is in practice mode
+
+        // Color palette per level
+        const levelColors = [
+            '#dc2626', // Level 1: Red (darker)
+            '#ea580c', // Level 2: Orange (genuine orange, not golden)
+            '#fde047', // Level 3: Lime Yellow (bright)
+            '#16a34a', // Level 4: Dark Green
+            '#0891b2', // Level 5: Cyan (bright)
+            '#2563eb', // Level 6: Blue (deep)
+            '#7c3aed', // Level 7: Violet (purple)
+            '#db2777', // Level 8: Magenta (hot pink)
+            '#0d9488', // Level 9: Emerald Green
+        ];
+
+        // Distraction color untuk setiap level (1:1 mapping)
+        // Warna default/fallback jika random selection gagal
+        const levelDistractionColors = [
+            '#fbbf24', // Level 1: Fallback Amber
+            '#fbbf24', // Level 2: Fallback Amber
+            '#fbbf24', // Level 3: Fallback Amber
+            '#fbbf24', // Level 4: Fallback Amber
+            '#ffffff', // Level 5: Fallback White
+            '#ffffff', // Level 6: Fallback White
+            '#f43f5e', // Level 7: Fallback Rose
+            '#a855f7', // Level 8: Fallback Purple
+            '#fbbf24'  // Level 9: Fallback Amber
+        ];
+
+        // Distraction colors - warna random pool untuk distraksi
+        // Setiap kali distraksi muncul, dipilih random dari pool ini
+        // Level 5 & 6 akan menambah White via getRandomDistractionColor()
+        const distractionColors = [
+            '#dc2626', // Red
+            '#ea580c', // Orange
+            '#fde047', // Yellow
+            '#16a34a', // Green
+            '#0891b2', // Cyan
+            '#2563eb', // Blue
+            '#7c3aed', // Violet
+            '#db2777', // Magenta
+            '#0d9488'  // Emerald
+        ];
+
+        // DOM Elements
+        const gameGrid = document.getElementById('gameGrid');
+        const levelStat = document.getElementById('levelStat');
+        const roundStat = document.getElementById('roundStat');
+        const mistakesStat = document.getElementById('mistakesStat');
+        const statusText = document.getElementById('statusText');
+        const gameControls = document.getElementById('gameControls');
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function createEmptyGrid() {
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+        }
+
+        function disableAllLights(disabled) {
+            document.querySelectorAll('.light').forEach(light => {
+                light.disabled = disabled;
+            });
+        }
+
+        async function flashLight(index) {
+            const light = document.getElementById(`light-${index}`);
+            if (!light) return;
+            light.style.backgroundColor = levelColor; // Nyalakan dengan warna level
+            light.classList.add('active');
+            await sleep(500);
+            light.classList.remove('active');
+            light.style.backgroundColor = '#334155'; // Kembali ke default
+            await sleep(200);
+        }
+
+        function getRandomDistractionColor(excludeColors = []) {
+            // Gunakan semua distraction colors kecuali level color dan excluded colors
+            let colorPool = [...distractionColors];
+            
+            // Khusus Level 5: exclude Cyan (pola) dan Blue juga, tambah White ke pool
+            if (level === 5) {
+                colorPool = colorPool.filter(c => c !== '#0891b2' && c !== '#2563eb'); // Remove Cyan & Blue
+                if (!colorPool.includes('#ffffff')) {
+                    colorPool.push('#ffffff');
+                }
+                // Jangan tambah levelColor ke excluded karena sudah di-filter di colorPool
+                const filtered = colorPool.filter(c => !excludeColors.includes(c));
+                if (filtered.length === 0) {
+                    console.warn('Level 5: No valid distraction color available!', colorPool, excludeColors);
+                    return colorPool[0] || '#ffffff';
+                }
+                return filtered[Math.floor(Math.random() * filtered.length)];
+            }
+            
+            // Khusus Level 6: exclude Blue (pola) dan Cyan juga, tambah White ke pool
+            if (level === 6) {
+                colorPool = colorPool.filter(c => c !== '#2563eb' && c !== '#0891b2'); // Remove Blue & Cyan
+                if (!colorPool.includes('#ffffff')) {
+                    colorPool.push('#ffffff');
+                }
+                // Jangan tambah levelColor ke excluded karena sudah di-filter di colorPool
+                const filtered = colorPool.filter(c => !excludeColors.includes(c));
+                if (filtered.length === 0) {
+                    console.warn('Level 6: No valid distraction color available!', colorPool, excludeColors);
+                    return colorPool[0] || '#ffffff';
+                }
+                return filtered[Math.floor(Math.random() * filtered.length)];
+            }
+            
+            // Level lain: exclude levelColor dan excludeColors
+            const excluded = [levelColor, ...excludeColors];
+            const filtered = colorPool.filter(c => !excluded.includes(c));
+            if (filtered.length === 0) {
+                console.warn(`Level ${level}: No valid distraction color available!`, colorPool, excluded);
+                return colorPool[0] || '#ffffff';
+            }
+            return filtered[Math.floor(Math.random() * filtered.length)];
+        }
+
+        function getLevelColorName() {
+            const names = {
+                '#dc2626': { text: 'MERAH', color: '#dc2626' },
+                '#ea580c': { text: 'ORANYE', color: '#ea580c' },
+                '#fde047': { text: 'KUNING', color: '#fde047' },
+                '#16a34a': { text: 'HIJAU', color: '#16a34a' },
+                '#0891b2': { text: 'CYAN', color: '#0891b2' },
+                '#2563eb': { text: 'BIRU', color: '#2563eb' },
+                '#7c3aed': { text: 'UNGU', color: '#7c3aed' },
+                '#db2777': { text: 'MAGENTA', color: '#db2777' },
+                '#0d9488': { text: 'ZAMRUD', color: '#0d9488' }
+            };
+            const nameObj = names[levelColor] || { text: 'BERWARNA', color: '#cbd5e1' };
+            return `<span style="color: ${nameObj.color}; font-weight: bold; font-size: 1.2em; display: block; text-align: center; margin-top: 0;">${nameObj.text}</span>`;
+        }
+
+        // Fungsi untuk konversi index grid berdasarkan rotasi
+        function convertIndexByRotation(index, rotation) {
+            // Konversi posisi index saat grid di-rotate
+            // Forward: 0° -> rotated position
+            // Input: index posisi di 0°, rotation angle
+            // Output: posisi visual saat dilihat di sudut rotation
+            
+            const row = Math.floor(index / 4);
+            const col = index % 4;
+            
+            // Normalize rotation ke 0-359
+            let normalizedRotation = rotation % 360;
+            if (normalizedRotation < 0) {
+                normalizedRotation = 360 + normalizedRotation;
+            }
+            
+            switch(normalizedRotation) {
+                case 90:
+                    // 90° CW: (r,c) -> (c, 3-r)
+                    return col * 4 + (3 - row);
+                case 180:
+                    // 180°: (r,c) -> (3-r, 3-c)
+                    return (3 - row) * 4 + (3 - col);
+                case 270:
+                    // 270° CW: (r,c) -> (3-c, r)
+                    return (3 - col) * 4 + row;
+                default:
+                    return index;
+            }
+        }
+
+        // Fungsi untuk inverse convert: dari rotated view BACK ke 0° view
+        // Digunakan saat player klik kotak di grid yang ter-rotate
+        function convertIndexFromRotation(visualIndex, rotation) {
+            // Input: visualIndex (posisi yang terlihat di rotated grid)
+            // Rotation: sudut rotasi (90, 180, 270)
+            // Output: index asli di 0° view (DOM index)
+            
+            const row = Math.floor(visualIndex / 4);
+            const col = visualIndex % 4;
+            
+            let normalizedRotation = rotation % 360;
+            if (normalizedRotation < 0) {
+                normalizedRotation = 360 + normalizedRotation;
+            }
+            
+            switch(normalizedRotation) {
+                case 90:
+                    // Inverse dari 90° CW: (r,c) -> (3-c, r) menjadi (c, 3-r)
+                    return (3 - col) * 4 + row;
+                case 180:
+                    // Inverse dari 180°: (r,c) -> (3-r, 3-c) (symmetric, sama)
+                    return (3 - row) * 4 + (3 - col);
+                case 270:
+                    // Inverse dari 270° CW: (r,c) -> (3-c, r) menjadi (col, 3-row)
+                    return col * 4 + (3 - row);
+                default:
+                    return visualIndex;
+            }
+        }
+        function startNextRound() {
+            if (isPracticeMode) {
+                // Practice Mode - limit rounds per level
+                let maxRounds = 2; // Level 1 default: 2 rounds
+                if (level === 2) maxRounds = 3; // Level 2: 3 rounds
+                if (level === 3) maxRounds = 4; // Level 3: 4 rounds
+
+                if (roundInLevel <= maxRounds) {
+                    // Still have rounds to do in this level
+                    if (level === 1) {
+                        if (roundInLevel === 1) {
+                            startPracticeRound1();
+                        } else if (roundInLevel === 2) {
+                            startPracticeRound2();
+                        }
+                    } else if (level === 2) {
+                        if (roundInLevel === 1) {
+                            startPracticeRound1();
+                        } else if (roundInLevel === 2) {
+                            startPracticeRound2();
+                        } else if (roundInLevel === 3) {
+                            startPracticeRound3();
+                        }
+                    } else if (level === 3) {
+                        if (roundInLevel === 1) {
+                            startPracticeRound1();
+                        } else if (roundInLevel === 2) {
+                            startPracticeRound2();
+                        } else if (roundInLevel === 3) {
+                            startPracticeRound3();
+                        } else if (roundInLevel === 4) {
+                            startPracticeRound4();
+                        }
+                    }
+                }
+            } else {
+                // Normal Game Mode
+                if (roundInLevel === 1) {
+                    startRound1ColorFocus();
+                } else if (roundInLevel === 2) {
+                    startRound2ColorFocus();
+                } else if (roundInLevel === 3) {
+                    startRound3RotationFocus();
+                } else if (roundInLevel === 4) {
+                    startRound4RotationFocus();
+                }
+            }
+        }
+
+        // ==================== LEVEL START ANNOUNCEMENT ====================
+        async function announceLevel() {
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+            console.log(`Level ${level} started with color ${levelColor}`);
+
+            // Create empty grid
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = levelColor; // Warna level
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            gameState = 'watching';
+            statusText.textContent = `🎯 Tingkat ${level} dimulai! Ingat ${level} lampu...`;
+            await sleep(3000);
+            startNextRound();
+        }
+
+        async function announcePracticeLevel() {
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+            console.log(`Practice Level ${level} started with color ${levelColor}`);
+
+            // Create empty grid
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = levelColor; // Warna level
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            gameState = 'watching';
+            const levelNames = ['One', 'Two', 'Three'];
+            statusText.textContent = `🎓 LATIHAN TINGKAT ${level} - Ingat ${level} lampu...`;
+            await sleep(3000);
+            startNextRound();
+        }
+
+
+        // ==================== PRACTICE MODE: ROUND 1 (NO DISTRACTION) ====================
+        async function startPracticeRound1() {
+            gameState = 'watching';
+            roundInLevel = 1;
+            roundStat.textContent = '1';
+            timeElapsed = 0;
+            userSequence = [];
+
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+            statusText.textContent = `🎓 LATIHAN PUTARAN 1 - Lihat pola (TANPA gangguan)...`;
+
+            // RANDOM PATTERN
+            correctSequence = [];
+            const allGrids = [];
+            for (let i = 0; i < 16; i++) {
+                allGrids.push(i);
+            }
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * allGrids.length);
+                correctSequence.push(allGrids[randomIdx]);
+                allGrids.splice(randomIdx, 1);
+            }
+
+            // Create grid
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155';
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            await sleep(800);
+            statusText.textContent = `👁️ Lihat pola...`;
+            await sleep(600);
+
+            // Flash ONLY pattern items (NO distraction)
+            const allSequence = [];
+            for (let i = 0; i < correctSequence.length; i++) {
+                allSequence.push({
+                    index: correctSequence[i],
+                    type: 'pattern',
+                    color: levelColor
+                });
+            }
+
+            // JANGAN di-shuffle untuk Round 1 - tampilkan dalam urutan asli!
+
+            // Flash sequence
+            for (let i = 0; i < allSequence.length; i++) {
+                const item = allSequence[i];
+                const light = document.getElementById(`light-${item.index}`);
+                light.style.backgroundColor = item.color;
+                light.classList.add('active');
+                await sleep(500);
+                light.classList.remove('active');
+                light.style.backgroundColor = '#334155';
+                await sleep(200);
+            }
+
+            await sleep(1000);
+
+            // Setup grid for input
+            for (let i = 0; i < 16; i++) {
+                const light = document.getElementById(`light-${i}`);
+                light.style.backgroundColor = '#334155';
+            }
+
+            await sleep(500);
+
+            // Player input
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.innerHTML = `Giliran Anda! Klik lampu dengan urutan<br>(${level} lampu)<br>- Waktu: 30d<br>${getLevelColorName()}`;
+        }
+
+        // ==================== PRACTICE MODE: ROUND 2 (WITH DISTRACTION) ====================
+        async function startPracticeRound2() {
+            gameState = 'watching';
+            roundInLevel = 2;
+            roundStat.textContent = '2';
+            timeElapsed = 0;
+            userSequence = [];
+
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+            statusText.textContent = `🎓 LATIHAN PUTARAN 2 - Lihat pola (DENGAN gangguan)...`;
+
+            // Create NEW pattern for Round 2
+            correctSequence = [];
+            const allGrids = [];
+            for (let i = 0; i < 16; i++) {
+                allGrids.push(i);
+            }
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * allGrids.length);
+                correctSequence.push(allGrids[randomIdx]);
+                allGrids.splice(randomIdx, 1);
+            }
+
+            // Get distraction indices
+            const distractionIndices = [];
+            const availableGrids = [];
+            for (let i = 0; i < 16; i++) {
+                if (!correctSequence.includes(i)) {
+                    availableGrids.push(i);
+                }
+            }
+            for (let i = 0; i < level; i++) {
+                if (availableGrids.length > 0) {
+                    const randomIdx = Math.floor(Math.random() * availableGrids.length);
+                    distractionIndices.push(availableGrids[randomIdx]);
+                    availableGrids.splice(randomIdx, 1);
+                }
+            }
+
+            // Create grid
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155';
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            await sleep(800);
+            statusText.textContent = `👁️ Lihat pola...`;
+            await sleep(600);
+
+            // Create sequence with distraction
+            const allSequence = [];
+            
+            for (let i = 0; i < correctSequence.length; i++) {
+                allSequence.push({
+                    index: correctSequence[i],
+                    type: 'pattern',
+                    color: levelColor
+                });
+            }
+
+            const distractionColors_array = [];
+            const usedColors = new Set();
+            let excludedColors = [];
+            if (level === 2) excludedColors.push('#eab308');
+            if (level === 5) {
+                excludedColors.push('#2563eb');
+                excludedColors.push('#0891b2');
+                excludedColors.push('#0d9488');
+            }
+            if (level === 6) excludedColors.push('#0891b2');
+
+            for (let i = 0; i < distractionIndices.length; i++) {
+                let randomColor;
+                do {
+                    randomColor = getRandomDistractionColor(excludedColors);
+                } while (usedColors.has(randomColor) || randomColor === levelColor);
+                
+                usedColors.add(randomColor);
+                distractionColors_array.push(randomColor);
+                
+                allSequence.push({
+                    index: distractionIndices[i],
+                    type: 'distraction',
+                    color: randomColor
+                });
+            }
+
+            // JANGAN di-shuffle untuk Round 2 - tampilkan pattern dalam urutan asli!
+            // Demo menampilkan semua items (pattern + distraksi) dalam urutan creation
+            // Validasi hanya untuk pattern dalam urutan asli
+
+            // Flash sequence
+            for (let i = 0; i < allSequence.length; i++) {
+                const item = allSequence[i];
+                const light = document.getElementById(`light-${item.index}`);
+                light.style.backgroundColor = item.color;
+                light.classList.add('active');
+                await sleep(500);
+                light.classList.remove('active');
+                light.style.backgroundColor = '#334155';
+                await sleep(200);
+            }
+
+            await sleep(1000);
+
+            // Setup grid for input
+            for (let i = 0; i < 16; i++) {
+                const light = document.getElementById(`light-${i}`);
+                light.style.backgroundColor = '#334155';
+            }
+
+            await sleep(500);
+
+            // Player input
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.innerHTML = `Giliran Anda! Klik lampu dengan urutan<br>(${level} lampu)<br>- Waktu: 30d<br>${getLevelColorName()}`;
+        }
+
+        // ==================== PRACTICE MODE: ROUND 3 (ROTATION 180) ====================
+        async function startPracticeRound3() {
+            gameState = 'watching';
+            roundInLevel = 3;
+            roundStat.textContent = '3';
+            timeElapsed = 0;
+            userSequence = [];
+
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+
+            statusText.textContent = `🔄 PUTARAN 3 - Lihat pola di 0°, lalu grid berputar!`;
+
+            // Generate NEW sequence for Round 3 - ensure unique indices
+            const originalSequence = [];
+            const availableIndices = [];
+            for (let i = 0; i < 16; i++) {
+                availableIndices.push(i);
+            }
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * availableIndices.length);
+                originalSequence.push(availableIndices[randomIdx]);
+                availableIndices.splice(randomIdx, 1);
+            }
+
+            await sleep(1500);
+
+            // Create clean grid (semua kotak hitam)
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            currentRotation = 180; // Fixed rotation for practice Level 3 Round 3
+
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155';
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            await sleep(100); // Ensure DOM is ready
+            await sleep(600);
+
+            // STEP 1: Show pattern at 0°
+            gameGrid.style.transform = 'rotate(0deg)';
+            statusText.textContent = '👁️ Lihat pola di 0°...';
+            await sleep(400);
+            
+            for (let i = 0; i < originalSequence.length; i++) {
+                await flashLight(originalSequence[i]);
+            }
+
+            await sleep(1200);
+
+            // STEP 2: Turn off lights
+            document.querySelectorAll('.light').forEach(light => {
+                light.style.backgroundColor = '#334155';
+                light.classList.remove('active');
+            });
+
+            statusText.textContent = '🔄 Grid sedang berputar...';
+            await sleep(800);
+
+            // STEP 3: Rotate to fixed angle for practice (180°)
+            // Kecepatan rotasi: 180°=2s
+            const rotationDuration = '2s';
+
+            gameGrid.style.transition = `transform ${rotationDuration} ease-in-out`;
+            gameGrid.style.transform = `rotate(${currentRotation}deg)`;
+            statusText.textContent = `⚡ Grid rotasi ${currentRotation}°! Klik kotak yang benar (urutan BEBAS)...`;
+            
+            // Tunggu sesuai durasi rotasi + buffer
+            await sleep(2500);
+
+            // IMPORTANT: Grid visual rotated, tapi DOM index tetap 0-15
+            // Player akan klik kotak di posisi visual (rotated)
+            // correctSequence tetap originalSequence (DOM indices)
+            correctSequence = originalSequence;
+
+            console.log(`Practice R3: Pattern=[${originalSequence}] at 0°, Grid rotated to ${currentRotation}° in ${rotationDuration}`);
+
+            gameGrid.style.transition = 'none';
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.textContent = `Klik ${level} kotak yang benar (urutan BEBAS!) - Time: 30s`;
+        }
+
+        // ==================== PRACTICE MODE: ROUND 4 (ROTATION 270) ====================
+        async function startPracticeRound4() {
+            gameState = 'watching';
+            roundInLevel = 4;
+            roundStat.textContent = '4';
+            timeElapsed = 0;
+            userSequence = [];
+
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+
+            statusText.textContent = `🔄 PUTARAN 4 - Lihat pola di 0°, lalu grid berputar!`;
+
+            // Generate NEW sequence for Round 4 - ensure unique indices
+            const originalSequence = [];
+            const availableIndices = [];
+            for (let i = 0; i < 16; i++) {
+                availableIndices.push(i);
+            }
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * availableIndices.length);
+                originalSequence.push(availableIndices[randomIdx]);
+                availableIndices.splice(randomIdx, 1);
+            }
+
+            await sleep(1500);
+
+            // Create clean grid (semua kotak hitam)
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            currentRotation = 270; // Fixed rotation for practice Level 3 Round 4
+
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155';
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            await sleep(100); // Ensure DOM is ready
+            await sleep(600);
+
+            // STEP 1: Show pattern at 0°
+            gameGrid.style.transform = 'rotate(0deg)';
+            statusText.textContent = '👁️ Lihat pola di 0°...';
+            await sleep(400);
+            
+            for (let i = 0; i < originalSequence.length; i++) {
+                await flashLight(originalSequence[i]);
+            }
+
+            await sleep(1200);
+
+            // STEP 2: Turn off lights
+            document.querySelectorAll('.light').forEach(light => {
+                light.style.backgroundColor = '#334155';
+                light.classList.remove('active');
+            });
+
+            statusText.textContent = '🔄 Grid sedang berputar...';
+            await sleep(800);
+
+            // STEP 3: Rotate to fixed angle for practice (270°)
+            // Kecepatan rotasi: 270°=3s
+            const rotationDuration = '3s';
+
+            gameGrid.style.transition = `transform ${rotationDuration} ease-in-out`;
+            gameGrid.style.transform = `rotate(${currentRotation}deg)`;
+            statusText.textContent = `⚡ Grid rotasi ${currentRotation}°! Klik kotak yang benar (urutan BEBAS)...`;
+            
+            // Tunggu sesuai durasi rotasi + buffer
+            await sleep(3500);
+
+            // IMPORTANT: Grid visual rotated, tapi DOM index tetap 0-15
+            // Player akan klik kotak di posisi visual (rotated)
+            // correctSequence tetap originalSequence (DOM indices)
+            correctSequence = originalSequence;
+
+            console.log(`Practice R4: Pattern=[${originalSequence}] at 0°, Grid rotated to ${currentRotation}° in ${rotationDuration}`);
+
+            gameGrid.style.transition = 'none';
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.textContent = `Klik ${level} kotak yang benar (urutan BEBAS!) - Time: 30s`;
+        }
+
+
+        async function startRound1ColorFocus() {
+            gameState = 'watching';
+            roundInLevel = 1;
+            roundStat.textContent = '1';
+            timeElapsed = 0;
+            userSequence = [];
+
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+
+            statusText.textContent = `🔴 PUTARAN 1 - Lihat pola...`;
+
+            // RANDOM PATTERN: Ambil grid random sejumlah level
+            correctSequence = [];
+            const allGrids = [];
+            for (let i = 0; i < 16; i++) {
+                allGrids.push(i);
+            }
+            // Shuffle dan ambil sebanyak level pattern
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * allGrids.length);
+                correctSequence.push(allGrids[randomIdx]);
+                allGrids.splice(randomIdx, 1);
+            }
+            
+            console.log(`R1 Level ${level}: correctSequence (pattern indices) = [${correctSequence}]`);
+
+            // RANDOM DISTRACTION: Ambil grid random yang tidak ada di pattern
+            const distractionIndices = [];
+            const availableGrids = [];
+            for (let i = 0; i < 16; i++) {
+                if (!correctSequence.includes(i)) {
+                    availableGrids.push(i);
+                }
+            }
+            // Shuffle dan ambil sebanyak level distraksi
+            // Special case: Level 9 hanya 7 distraction (jadi total 9+7=16, pas dengan grid)
+            const distractionCount = level === 9 ? 7 : level;
+            for (let i = 0; i < distractionCount; i++) {
+                if (availableGrids.length > 0) {
+                    const randomIdx = Math.floor(Math.random() * availableGrids.length);
+                    distractionIndices.push(availableGrids[randomIdx]);
+                    availableGrids.splice(randomIdx, 1);
+                }
+            }
+            
+            console.log(`R1 Level ${level}: distractionIndices=[${distractionIndices}]`);
+
+            // Create grid with all lights DARK (hitam) initially
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155'; // Dark/hitam
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            // Wait before starting demo
+            disableAllLights(true);
+            await sleep(800);
+
+            statusText.textContent = `👁️ Lihat pola...`;
+            await sleep(600);
+
+            // Gabung pattern dan distraksi, shuffle urutan kemunculannya
+            const allSequence = [];
+            
+            // Tambah pattern indices dengan label
+            for (let i = 0; i < correctSequence.length; i++) {
+                allSequence.push({
+                    index: correctSequence[i],
+                    type: 'pattern',
+                    color: levelColor
+                });
+            }
+            
+            // Tambah distraksi indices dengan label dan color
+            const distractionColors_array = [];
+            const usedColors = new Set();
+            
+            // Khusus Level 2: exclude Kuning juga
+            // Khusus Level 5: exclude Blue juga (selain Cyan)
+            // Khusus Level 6: exclude Cyan juga (selain Blue)
+            let excludedColors = [];
+            if (level === 2) excludedColors.push('#eab308'); // Yellow
+            if (level === 5) {
+                excludedColors.push('#2563eb'); // Blue (exclude extra)
+                excludedColors.push('#0891b2'); // Cyan (exclude - this is the pattern color)
+                excludedColors.push('#0d9488'); // Emerald (too similar to Cyan visually)
+            }
+            if (level === 6) excludedColors.push('#0891b2'); // Cyan (exclude extra)
+            
+            console.log(`R1 Level ${level}: START distraction color assignment - excludedColors=${JSON.stringify(excludedColors)}`);
+            
+            for (let i = 0; i < distractionIndices.length; i++) {
+                let randomColor;
+                let attempts = 0;
+                do {
+                    randomColor = getRandomDistractionColor(excludedColors);
+                    attempts++;
+                    if (attempts > 50) {
+                        console.error(`R1 Level ${level}: TOO MANY ATTEMPTS (${attempts}) for distraction index ${distractionIndices[i]}!`);
+                        break;
+                    }
+                } while (usedColors.has(randomColor) || randomColor === levelColor);
+                
+                if (randomColor === '#0891b2') {
+                    console.warn(`R1 Level ${level}: Distraction index ${distractionIndices[i]} assigned CYAN COLOR (attempts=${attempts}) ⚠️⚠️⚠️`);
+                } else {
+                    console.log(`R1 Level ${level}: Distraction index ${distractionIndices[i]} → Color=${randomColor} (attempts=${attempts})`);
+                }
+                
+                usedColors.add(randomColor);
+                distractionColors_array.push(randomColor);
+                
+                allSequence.push({
+                    index: distractionIndices[i],
+                    type: 'distraction',
+                    color: randomColor
+                });
+            }
+            
+            console.log(`R1 Level ${level}: DISTRACTION COLORS ARRAY = [${distractionColors_array.join(', ')}]`);
+            
+            // Shuffle array (Fisher-Yates shuffle)
+            for (let i = allSequence.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allSequence[i], allSequence[j]] = [allSequence[j], allSequence[i]];
+            }
+
+            // IMPORTANT: Extract pattern order dari shuffled sequence untuk validasi
+            // Ini adalah urutan yang player lihat saat demo
+            const patternOrderFromDemo = [];
+            for (let i = 0; i < allSequence.length; i++) {
+                if (allSequence[i].type === 'pattern') {
+                    patternOrderFromDemo.push(allSequence[i].index);
+                }
+            }
+            // Ganti correctSequence dengan urutan demo untuk validasi yang akurat
+            correctSequence = patternOrderFromDemo;
+            
+            console.log(`R1 Level ${level}: Pola=${levelColor}, Distraksi=[${distractionColors_array.join(', ')}]`);
+            console.log(`R1 allSequence:`, allSequence);
+            
+            // Count berapa banyak Cyan di allSequence
+            const cyanCount = allSequence.filter(item => item.color === '#0891b2').length;
+            console.log(`R1 Level ${level}: Total Cyan items = ${cyanCount} (should be ${level})`);
+            
+            // Log detail setiap item di allSequence
+            console.log(`R1 Level ${level}: DETAILED SEQUENCE:`);
+            allSequence.forEach((item, idx) => {
+                console.log(`  [${idx}] Index=${item.index}, Type=${item.type}, Color=${item.color}`);
+            });
+            
+            // Flash dalam urutan random - dengan log detail setiap flash
+            let cyanFlashCount = 0;
+            for (let i = 0; i < allSequence.length; i++) {
+                const item = allSequence[i];
+                const light = document.getElementById(`light-${item.index}`);
+                
+                if (item.color === '#0891b2') {
+                    cyanFlashCount++;
+                    console.log(`R1 FLASH #${i+1}: Index=${item.index}, Color=CYAN (Cyan flash #${cyanFlashCount}), isPattern=${correctSequence.includes(item.index)}`);
+                } else {
+                    console.log(`R1 FLASH #${i+1}: Index=${item.index}, Color=${item.color}, isPattern=${correctSequence.includes(item.index)}`);
+                }
+                
+                light.style.backgroundColor = item.color;
+                light.classList.add('active');
+                
+                await sleep(500);
+                
+                light.classList.remove('active');
+                light.style.backgroundColor = '#334155';
+                await sleep(200);
+            }
+            console.log(`R1 FLASH COMPLETE: Total Cyan flashed = ${cyanFlashCount} (expected ${level})`);
+            console.log(`R1 Actual Cyan in allSequence vs Flashed: Count=${cyanCount}, Flashed=${cyanFlashCount}`);
+
+            await sleep(1000);
+
+            // Setup grid untuk player input: SEMUA HITAM (user harus mengingat dari demo)
+            for (let i = 0; i < 16; i++) {
+                const light = document.getElementById(`light-${i}`);
+                light.style.backgroundColor = '#334155'; // Semua hitam/default
+            }
+
+            await sleep(500);
+            // Player input - ROUND 1
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.innerHTML = `Giliran Anda! Klik lampu dengan urutan<br>(${level} lampu)<br>- Waktu: 30d<br>${getLevelColorName()}`;
+        }
+
+        // ==================== ROUND 2: COLOR FOCUS - PATTERN 2 (SAME KONSEP AS ROUND 1) ====================
+        async function startRound2ColorFocus() {
+            gameState = 'watching';
+            roundInLevel = 2;
+            roundStat.textContent = '2';
+            timeElapsed = 0;
+            userSequence = [];
+
+            // Set level color (jika belum di-set atau untuk consistency)
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+
+            statusText.textContent = `🔴 PUTARAN 2 - Lihat pola (POLA BARU)...`;
+
+            // RANDOM PATTERN: Ambil grid random sejumlah level (beda dari Round 1)
+            correctSequence = [];
+            const allGrids = [];
+            for (let i = 0; i < 16; i++) {
+                allGrids.push(i);
+            }
+            // Shuffle dan ambil sebanyak level pattern
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * allGrids.length);
+                correctSequence.push(allGrids[randomIdx]);
+                allGrids.splice(randomIdx, 1);
+            }
+
+            // RANDOM DISTRACTION: Ambil grid random yang tidak ada di pattern
+            const distractionIndices = [];
+            const availableGrids = [];
+            for (let i = 0; i < 16; i++) {
+                if (!correctSequence.includes(i)) {
+                    availableGrids.push(i);
+                }
+            }
+            // Shuffle dan ambil sebanyak level distraksi
+            // Special case: Level 9 hanya 7 distraction (jadi total 9+7=16, pas dengan grid)
+            const distractionCount = level === 9 ? 7 : level;
+            for (let i = 0; i < distractionCount; i++) {
+                if (availableGrids.length > 0) {
+                    const randomIdx = Math.floor(Math.random() * availableGrids.length);
+                    distractionIndices.push(availableGrids[randomIdx]);
+                    availableGrids.splice(randomIdx, 1);
+                }
+            }
+
+            // Create grid with all lights DARK (hitam) initially
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155'; // Dark/hitam
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            // Wait before starting demo
+            disableAllLights(true);
+            await sleep(800);
+
+            statusText.textContent = `👁️ Lihat pola...`;
+            await sleep(600);
+
+            // Gabung pattern dan distraksi, shuffle urutan kemunculannya
+            const allSequence = [];
+            
+            // Tambah pattern indices dengan label
+            for (let i = 0; i < correctSequence.length; i++) {
+                allSequence.push({
+                    index: correctSequence[i],
+                    type: 'pattern',
+                    color: levelColor
+                });
+            }
+            
+            // Tambah distraksi indices dengan label dan color
+            const distractionColors_array = [];
+            const usedColors = new Set();
+            
+            // Khusus Level 2: exclude Kuning juga
+            // Khusus Level 5: exclude Blue juga (selain Cyan)
+            // Khusus Level 6: exclude Cyan juga (selain Blue)
+            let excludedColors = [];
+            if (level === 2) excludedColors.push('#eab308'); // Yellow
+            if (level === 5) {
+                excludedColors.push('#2563eb'); // Blue (exclude extra)
+                excludedColors.push('#0891b2'); // Cyan (exclude - this is the pattern color)
+                excludedColors.push('#0d9488'); // Emerald (too similar to Cyan visually)
+            }
+            if (level === 6) excludedColors.push('#0891b2'); // Cyan (exclude extra)
+            
+            for (let i = 0; i < distractionIndices.length; i++) {
+                let randomColor;
+                do {
+                    randomColor = getRandomDistractionColor(excludedColors);
+                } while (usedColors.has(randomColor) || randomColor === levelColor);
+                
+                usedColors.add(randomColor);
+                distractionColors_array.push(randomColor);
+                
+                allSequence.push({
+                    index: distractionIndices[i],
+                    type: 'distraction',
+                    color: randomColor
+                });
+            }
+            
+            // Shuffle array (Fisher-Yates shuffle)
+            for (let i = allSequence.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allSequence[i], allSequence[j]] = [allSequence[j], allSequence[i]];
+            }
+
+            // IMPORTANT: Extract pattern order dari shuffled sequence untuk validasi
+            // Ini adalah urutan yang player lihat saat demo
+            const patternOrderFromDemo = [];
+            for (let i = 0; i < allSequence.length; i++) {
+                if (allSequence[i].type === 'pattern') {
+                    patternOrderFromDemo.push(allSequence[i].index);
+                }
+            }
+            // Ganti correctSequence dengan urutan demo untuk validasi yang akurat
+            correctSequence = patternOrderFromDemo;
+            
+            console.log(`R2 Level ${level}: Pola=${levelColor}, Distraksi=[${distractionColors_array.join(', ')}]`);
+            console.log(`R2 allSequence:`, allSequence);
+            
+            // Count berapa banyak Cyan di allSequence
+            const cyanCountR2 = allSequence.filter(item => item.color === '#0891b2').length;
+            console.log(`R2 Level ${level}: Total Cyan items = ${cyanCountR2} (should be ${level})`);
+            
+            // Log detail setiap item di allSequence
+            console.log(`R2 Level ${level}: DETAILED SEQUENCE:`);
+            allSequence.forEach((item, idx) => {
+                console.log(`  [${idx}] Index=${item.index}, Type=${item.type}, Color=${item.color}`);
+            });
+            
+            // Flash dalam urutan random
+            for (let i = 0; i < allSequence.length; i++) {
+                const item = allSequence[i];
+                const light = document.getElementById(`light-${item.index}`);
+                
+                light.style.backgroundColor = item.color;
+                light.classList.add('active');
+                
+                await sleep(500);
+                
+                light.classList.remove('active');
+                light.style.backgroundColor = '#334155';
+                await sleep(200);
+            }
+
+            await sleep(1000);
+
+            // Setup grid untuk player input: SEMUA HITAM (user harus mengingat dari demo)
+            for (let i = 0; i < 16; i++) {
+                const light = document.getElementById(`light-${i}`);
+                light.style.backgroundColor = '#334155'; // Semua hitam/default
+            }
+
+            await sleep(500);
+
+            // Player input - ROUND 2
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.innerHTML = `Giliran Anda! Klik lampu dengan urutan<br>(${level} lampu)<br>- Waktu: 30d<br>${getLevelColorName()}`;
+        }
+
+        // ==================== ROUND 3: ROTATION GUESSING ====================
+        async function startRound3RotationFocus() {
+            gameState = 'watching';
+            roundInLevel = 3;
+            roundStat.textContent = '3';
+            timeElapsed = 0;
+            userSequence = [];
+
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+
+            statusText.textContent = `🔄 PUTARAN 3 - Lihat pola di 0°, lalu grid berputar!`;
+
+            // Generate NEW sequence for Round 3 - ensure unique indices
+            const originalSequence = [];
+            const availableIndices = [];
+            for (let i = 0; i < 16; i++) {
+                availableIndices.push(i);
+            }
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * availableIndices.length);
+                originalSequence.push(availableIndices[randomIdx]);
+                availableIndices.splice(randomIdx, 1);
+            }
+
+            await sleep(1500);
+
+            // Create clean grid (semua kotak hitam)
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            currentRotation = 0;
+
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155';
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            await sleep(600);
+
+            // STEP 1: Show pattern at 0°
+            gameGrid.style.transform = 'rotate(0deg)';
+            statusText.textContent = '👁️ Lihat pola di 0°...';
+            await sleep(400);
+            
+            for (let i = 0; i < originalSequence.length; i++) {
+                await flashLight(originalSequence[i]);
+            }
+
+            await sleep(1200);
+
+            // STEP 2: Turn off lights
+            document.querySelectorAll('.light').forEach(light => {
+                light.style.backgroundColor = '#334155';
+                light.classList.remove('active');
+            });
+
+            statusText.textContent = '🔄 Grid sedang berputar...';
+            await sleep(800);
+
+            // STEP 3: Rotate to random angle (90, 180, or 270) with smooth animation
+            const rotations = [90, 180, 270];
+            currentRotation = rotations[Math.floor(Math.random() * rotations.length)];
+
+            // Kecepatan rotasi berdasarkan sudut: 90°=1s, 180°=2s, 270°=3s
+            let rotationDuration = '2s';
+            if (currentRotation === 90) rotationDuration = '1s';
+            else if (currentRotation === 180) rotationDuration = '2s';
+            else if (currentRotation === 270) rotationDuration = '3s';
+
+            gameGrid.style.transition = `transform ${rotationDuration} ease-in-out`;
+            gameGrid.style.transform = `rotate(${currentRotation}deg)`;
+            statusText.textContent = `⚡ Grid rotasi ${currentRotation}°! Klik kotak yang benar (urutan BEBAS)...`;
+            
+            // Tunggu sesuai durasi rotasi + 1 detik buffer
+            const waitTime = (currentRotation === 90 ? 2000 : currentRotation === 180 ? 3000 : 4000);
+            await sleep(waitTime);
+
+            // IMPORTANT: Grid visual rotated, tapi DOM index tetap 0-15
+            // Player akan klik kotak di posisi visual (rotated)
+            // correctSequence tetap originalSequence (DOM indices)
+            correctSequence = originalSequence;
+
+            console.log(`R3: Pattern=[${originalSequence}] at 0°, Grid rotated to ${currentRotation}° in ${rotationDuration}`);
+
+            gameGrid.style.transition = 'none';
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.textContent = `Klik ${level} kotak yang benar (URUTAN BEBAS!) - Waktu: 30d`;
+        }
+
+        // ==================== ROUND 4: ROTATION GUESSING ====================
+        async function startRound4RotationFocus() {
+            gameState = 'watching';
+            roundInLevel = 4;
+            roundStat.textContent = '4';
+            timeElapsed = 0;
+            userSequence = [];
+
+            // Set level color
+            levelColor = levelColors[Math.min(level - 1, levelColors.length - 1)];
+
+            statusText.textContent = `🔄 PUTARAN 4 - Lihat pola di 0°, lalu grid berputar!`;
+
+            // Generate NEW sequence for Round 4 - ensure unique indices
+            const originalSequence = [];
+            const availableIndices = [];
+            for (let i = 0; i < 16; i++) {
+                availableIndices.push(i);
+            }
+            for (let i = 0; i < level; i++) {
+                const randomIdx = Math.floor(Math.random() * availableIndices.length);
+                originalSequence.push(availableIndices[randomIdx]);
+                availableIndices.splice(randomIdx, 1);
+            }
+
+            await sleep(1500);
+
+            // Create clean grid (semua kotak hitam)
+            gameGrid.innerHTML = '';
+            gameGrid.style.transform = 'rotate(0deg)';
+            currentRotation = 0;
+
+            for (let i = 0; i < 16; i++) {
+                const light = document.createElement('button');
+                light.className = 'light';
+                light.id = `light-${i}`;
+                light.style.backgroundColor = '#334155';
+                light.onclick = () => handleLightClick(i);
+                gameGrid.appendChild(light);
+            }
+
+            disableAllLights(true);
+            await sleep(600);
+
+            // STEP 1: Show pattern at 0°
+            gameGrid.style.transform = 'rotate(0deg)';
+            statusText.textContent = '👁️ Lihat pola di 0°...';
+            await sleep(400);
+            
+            for (let i = 0; i < originalSequence.length; i++) {
+                await flashLight(originalSequence[i]);
+            }
+
+            await sleep(1200);
+
+            // STEP 2: Turn off lights
+            document.querySelectorAll('.light').forEach(light => {
+                light.style.backgroundColor = '#334155';
+                light.classList.remove('active');
+            });
+
+            statusText.textContent = '🔄 Grid sedang berputar...';
+            await sleep(800);
+
+            // STEP 3: Rotate to random angle (90, 180, or 270) with smooth animation
+            const rotations = [90, 180, 270];
+            currentRotation = rotations[Math.floor(Math.random() * rotations.length)];
+
+            // Kecepatan rotasi berdasarkan sudut: 90°=1s, 180°=2s, 270°=3s
+            let rotationDuration = '2s';
+            if (currentRotation === 90) rotationDuration = '1s';
+            else if (currentRotation === 180) rotationDuration = '2s';
+            else if (currentRotation === 270) rotationDuration = '3s';
+
+            gameGrid.style.transition = `transform ${rotationDuration} ease-in-out`;
+            gameGrid.style.transform = `rotate(${currentRotation}deg)`;
+            statusText.textContent = `⚡ Grid rotasi ${currentRotation}°! Klik kotak yang benar (urutan BEBAS)...`;
+            
+            // Tunggu sesuai durasi rotasi + 1 detik buffer
+            const waitTime = (currentRotation === 90 ? 2000 : currentRotation === 180 ? 3000 : 4000);
+            await sleep(waitTime);
+
+            // IMPORTANT: Grid visual rotated, tapi DOM index tetap 0-15
+            // Player akan klik kotak di posisi visual (rotated)
+            // correctSequence tetap originalSequence (DOM indices)
+            correctSequence = originalSequence;
+
+            console.log(`R4: Pattern=[${originalSequence}] at 0°, Grid rotated to ${currentRotation}° in ${rotationDuration}`);
+
+            gameGrid.style.transition = 'none';
+            disableAllLights(false);
+            gameState = 'input';
+            startTimer();
+            statusText.textContent = `Klik ${level} kotak yang benar (URUTAN BEBAS!) - Waktu: 30d`;
+        }
+
+        // ==================== INPUT HANDLING ====================
+        async function handleLightClick(index) {
+            if (gameState !== 'input') return;
+
+            await flashLight(index);
+            
+            // DEBUG: Log untuk test
+            console.log(`Click - Round: ${roundInLevel}, Index: ${index}, Rotation: ${currentRotation}°`);
+
+            if (roundInLevel === 1 || roundInLevel === 2) {
+                // ROUNDS 1 & 2: Sequential input (Color Focus)
+                const expectedIndex = correctSequence[userSequence.length];
+                
+                console.log(`Round ${roundInLevel}: Clicked ${index}, Expected ${expectedIndex}, Sequence so far: [${userSequence}], Pattern: [${correctSequence}]`);
+                
+                if (index !== expectedIndex) {
+                    // WRONG! Flash merah dengan X untuk highlight error
+                    const wrongLight = document.getElementById(`light-${index}`);
+                    wrongLight.style.backgroundColor = '#ef4444'; // Merah
+                    wrongLight.style.color = 'white';
+                    wrongLight.textContent = '✕'; // X mark
+                    wrongLight.style.fontSize = '32px';
+                    wrongLight.style.fontWeight = 'bold';
+                    
+                    await sleep(600); // Flash merah 600ms
+                    
+                    wrongLight.style.backgroundColor = '#334155'; // Kembali hitam
+                    wrongLight.textContent = '';
+                    wrongLight.style.color = '';
+                    wrongLight.style.fontSize = '';
+                    wrongLight.style.fontWeight = '';
+                    
+                    mistakes++;
+                    mistakesStat.textContent = `${mistakes}/3`;
+                    userSequence = []; // RESET urutan
+
+                    if (mistakes >= 3) {
+                        roundTimes.push({ level, round: roundInLevel, time: timeElapsed });
+                        gameOverRound = roundInLevel;
+                        endGame();
+                    } else {
+                        gameState = 'input';
+                        statusText.textContent = `❌ Salah! Coba lagi (${mistakes}/3)...`;
+                    }
+                    return;
+                }
+
+                // CORRECT! Add visual feedback for correct click
+                userSequence.push(index);
+                const correctLight = document.getElementById(`light-${index}`);
+                correctLight.style.backgroundColor = '#10b981'; // Hijau
+                correctLight.style.color = 'white';
+                correctLight.textContent = '✓'; // Checkmark
+                correctLight.style.fontSize = '32px';
+                correctLight.style.fontWeight = 'bold';
+                
+                await sleep(400); // Flash hijau 400ms
+                
+                correctLight.style.backgroundColor = '#334155'; // Kembali hitam
+                correctLight.textContent = '';
+                correctLight.style.color = '';
+                correctLight.style.fontSize = '';
+                correctLight.style.fontWeight = '';
+
+                // Check if sequence complete
+                if (userSequence.length === correctSequence.length) {
+                    stopTimer();
+                    gameState = 'correct';
+                    disableAllLights(true);
+                    gameGrid.style.transform = 'rotate(0deg)';
+
+                    roundTimes.push({ level, round: roundInLevel, time: timeElapsed });
+                    statusText.textContent = `✅ Putaran ${roundInLevel} Selesai!`;
+                    await sleep(2000);
+                    
+                    // Determine max rounds for current level in practice mode
+                    let maxRounds = 2;
+                    if (isPracticeMode) {
+                        if (level === 2) maxRounds = 3;
+                        if (level === 3) maxRounds = 4;
+                    } else {
+                        maxRounds = 4; // Normal game always has 4 rounds
+                    }
+
+                    // Lanjut ke round berikutnya atau level berikutnya
+                    if (roundInLevel < maxRounds) {
+                        roundInLevel++;
+                        startNextRound();
+                    } else {
+                        // Round/Level selesai
+                        if (isPracticeMode) {
+                            // Check if all practice levels done (practice only goes to level 3)
+                            if (level < 3) {
+                                level++;
+                                levelStat.textContent = level;
+                                roundInLevel = 1;
+                                statusText.textContent = `✅ Tingkat ${level - 1} Selesai! Beralih ke Latihan Tingkat ${level}...`;
+                                await sleep(2500);
+                                announcePracticeLevel();
+                            } else {
+                                // All 3 practice levels done
+                                showPracticeComplete();
+                            }
+                        } else {
+                            // Normal game mode
+                            level++;
+                            levelStat.textContent = level;
+                            roundInLevel = 1;
+                            statusText.textContent = `✅ Tingkat ${level - 1} Selesai! Beralih ke Tingkat ${level}...`;
+                            await sleep(2500);
+                            startNextRound();
+                        }
+                    }
+                }
+            } else if (roundInLevel === 3) {
+                // ROUND 3: Non-sequential with VISUAL rotation
+                // Grid visual di-rotate, tapi DOM index tetap 0-15
+                // Player klik kotak di grid yang ter-rotate (visual position)
+                // Kita terima DOM index (0-15), dan bandingkan langsung dengan correctSequence (juga DOM indices)
+                
+                console.log(`R3 Click: DOM index ${index}, Pattern=[${correctSequence}], Current rotation=${currentRotation}°`);
+                
+                if (!userSequence.includes(index)) {
+                    userSequence.push(index);
+
+                    if (!correctSequence.includes(index)) {
+                        // Wrong click - kotak yang diklik bukan bagian dari pola
+                        mistakes++;
+                        mistakesStat.textContent = `${mistakes}/3`;
+
+                        if (mistakes >= 3) {
+                            roundTimes.push({ level, round: roundInLevel, time: timeElapsed });
+                            gameOverRound = roundInLevel;
+                            endGame();
+                        } else {
+                            gameState = 'input';
+                            statusText.textContent = `❌ Salah! Bukan bagian pola. Coba lagi (${mistakes}/3)...`;
+                            userSequence = [];
+                        }
+                        return;
+                    } else {
+                        // Correct click - kotak ini ada di pola
+                        const progress = userSequence.length;
+                        const total = correctSequence.length;
+                        statusText.textContent = `✅ Benar! (${progress}/${total})`;
+                        
+                        // Check if all pattern lights have been clicked
+                        const allClicked = correctSequence.every(idx => userSequence.includes(idx));
+                        if (allClicked) {
+                            // Round complete - semua kotak pola berhasil diklik
+                            await sleep(800);
+                            stopTimer();
+                            gameState = 'correct';
+                            disableAllLights(true);
+
+                            roundTimes.push({ level, round: roundInLevel, time: timeElapsed });
+                            statusText.textContent = `✅ Putaran ${roundInLevel} Selesai!`;
+                            await sleep(2000);
+                            
+                            // Determine max rounds for current level in practice mode
+                            let maxRounds = 2;
+                            if (isPracticeMode) {
+                                if (level === 2) maxRounds = 3;
+                                if (level === 3) maxRounds = 4;
+                            } else {
+                                maxRounds = 4;
+                            }
+                            
+                            // Lanjut ke round berikutnya
+                            if (roundInLevel < maxRounds) {
+                                roundInLevel++;
+                                startNextRound();
+                            } else {
+                                // Level selesai
+                                if (isPracticeMode) {
+                                    // Check if all practice levels done
+                                    if (level < 3) {
+                                        level++;
+                                        levelStat.textContent = level;
+                                        roundInLevel = 1;
+                                        statusText.textContent = `✅ Tingkat ${level - 1} Selesai! Beralih ke Latihan Tingkat ${level}...`;
+                                        await sleep(2500);
+                                        announcePracticeLevel();
+                                    } else {
+                                        // All 3 practice levels done
+                                        showPracticeComplete();
+                                    }
+                                } else {
+                                    // Game mode
+                                    level++;
+                                    levelStat.textContent = level;
+                                    roundInLevel = 1;
+                                    statusText.textContent = `✅ Tingkat ${level - 1} Selesai!`;
+                                    await sleep(2000);
+                                    announceLevel();
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (roundInLevel === 4) {
+                // ROUND 4: Non-sequential with VISUAL rotation
+                // Grid visual di-rotate, tapi DOM index tetap 0-15
+                // Player klik kotak di grid yang ter-rotate (visual position)
+                // Kita terima DOM index (0-15), dan bandingkan langsung dengan correctSequence (juga DOM indices)
+                
+                console.log(`R4 Click: DOM index ${index}, Pattern=[${correctSequence}], Current rotation=${currentRotation}°`);
+                
+                if (!userSequence.includes(index)) {
+                    userSequence.push(index);
+
+                    if (!correctSequence.includes(index)) {
+                        // Wrong click - kotak yang diklik bukan bagian dari pola
+                        mistakes++;
+                        mistakesStat.textContent = `${mistakes}/3`;
+
+                        if (mistakes >= 3) {
+                            roundTimes.push({ level, round: roundInLevel, time: timeElapsed });
+                            gameOverRound = roundInLevel;
+                            endGame();
+                        } else {
+                            gameState = 'input';
+                            statusText.textContent = `❌ Salah! Bukan bagian pola. Coba lagi (${mistakes}/3)...`;
+                            userSequence = [];
+                        }
+                        return;
+                    } else {
+                        // Correct click - kotak ini ada di pola
+                        const progress = userSequence.length;
+                        const total = correctSequence.length;
+                        statusText.textContent = `✅ Benar! (${progress}/${total})`;
+                        
+                        // Check if all pattern lights have been clicked
+                        const allClicked = correctSequence.every(idx => userSequence.includes(idx));
+                        if (allClicked) {
+                            // Round complete - semua kotak pola berhasil diklik
+                            await sleep(800);
+                            stopTimer();
+                            gameState = 'correct';
+                            disableAllLights(true);
+                            gameGrid.style.transform = 'rotate(0deg)';
+                            gameGrid.style.transition = 'none';
+
+                            roundTimes.push({ level, round: roundInLevel, time: timeElapsed });
+                            statusText.textContent = `✅ Putaran ${roundInLevel} Selesai!`;
+                            await sleep(2000);
+                            
+                            // Level selesai
+                            if (isPracticeMode) {
+                                // Check if all practice levels done
+                                if (level < 3) {
+                                    level++;
+                                    levelStat.textContent = level;
+                                    roundInLevel = 1;
+                                    statusText.textContent = `✅ Tingkat ${level - 1} Selesai! Beralih ke Latihan Tingkat ${level}...`;
+                                    await sleep(2500);
+                                    announcePracticeLevel();
+                                } else {
+                                    // All 3 practice levels done
+                                    showPracticeComplete();
+                                }
+                            } else {
+                                // Game mode
+                                level++;
+                                levelStat.textContent = level;
+                                roundInLevel = 1;
+                                statusText.textContent = `✅ Tingkat ${level - 1} Selesai!`;
+                                await sleep(2000);
+                                announceLevel();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ==================== TIMER ====================
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timeElapsed = 0;
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                if (gameState === 'input') {
+                    let baseText = '';
+                    if (roundInLevel === 1 || roundInLevel === 2) {
+                        baseText = `Giliran Anda! Klik lampu dengan urutan<br>(${level} lampu)<br>- Waktu: ${timeElapsed}d<br>${getLevelColorName()}`;
+                    } else if (roundInLevel === 3) {
+                        baseText = `Giliran Anda! Klik ${level} kotak yang benar (URUTAN BEBAS!) - Rotasi ${currentRotation}°`;
+                    } else if (roundInLevel === 4) {
+                        baseText = `Giliran Anda! Klik ${level} kotak yang benar (URUTAN BEBAS!) - Rotasi ${currentRotation}°`;
+                    }
+                    if (roundInLevel === 1 || roundInLevel === 2) {
+                        statusText.innerHTML = baseText;
+                    } else {
+                        statusText.innerHTML = `${baseText} - Waktu: ${timeElapsed}d`;
+                    }
+                }
+                if (timeElapsed > 30) {
+                    stopTimer();
+                    if (gameState === 'input') {
+                        statusText.innerHTML = '⏱️ 30d sudah! Tapi lanjutkan...';
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // ==================== GAME CONTROL ====================
+        function startPracticeMode() {
+            isPracticeMode = true;
+            level = 1;
+            roundInLevel = 1;
+            gameOverRound = 1;
+            mistakes = 0;
+            score = 0;
+            userSequence = [];
+            correctSequence = [];
+            roundTimes = [];
+
+            // Tampilkan game screen, sembunyikan menu
+            document.getElementById('menuScreen').style.display = 'none';
+            document.getElementById('gameScreen').classList.add('active');
+
+            levelStat.textContent = '1';
+            roundStat.textContent = '-';
+            mistakesStat.textContent = '0/3';
+
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('stopBtn').textContent = 'BACK TO MENU';
+            document.getElementById('statusText').textContent = '';
+
+            gameState = 'playing';
+            announcePracticeLevel(); // Announce Practice Level
+        }
+
+        function startGame() {
+            isPracticeMode = false;
+            level = 1;
+            roundInLevel = 1;
+            gameOverRound = 1;
+            mistakes = 0;
+            score = 0;
+            userSequence = [];
+            correctSequence = [];
+            roundTimes = [];
+
+            // Tampilkan game screen, sembunyikan menu
+            document.getElementById('menuScreen').style.display = 'none';
+            document.getElementById('gameScreen').classList.add('active');
+
+            levelStat.textContent = '1';
+            roundStat.textContent = '-';
+            mistakesStat.textContent = '0/3';
+
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('stopBtn').textContent = 'RESTART';
+            document.getElementById('statusText').textContent = '';
+
+            gameState = 'playing';
+            announceLevel(); // Announce Level 1 sebelum round mulai
+        }
+
+        function stopGame() {
+            location.reload();
+        }
+
+        async function showPracticeComplete() {
+            gameState = 'gameOver';
+            stopTimer();
+            disableAllLights(true);
+            gameGrid.style.transform = 'rotate(0deg)';
+
+            // Clear grid
+            gameGrid.innerHTML = '';
+
+            statusText.textContent = `🎉 Latihan Selesai!`;
+            
+            // Create completion message
+            const message = document.createElement('div');
+            message.style.cssText = `
+                text-align: center;
+                padding: 24px;
+                color: #cbd5e1;
+                font-size: 18px;
+            `;
+            message.innerHTML = `
+                <p style="margin-bottom: 16px; font-size: 32px;">🎓✅</p>
+                <p style="margin-bottom: 24px; font-size: 20px; font-weight: bold; color: #10b981;">Anda siap untuk permainan nyata!</p>
+                <p style="margin-bottom: 8px;">Anda sudah belajar:</p>
+                <p style="margin-bottom: 4px;">✓ Pengenalan pola</p>
+                <p style="margin-bottom: 4px;">✓ Menangani gangguan</p>
+                <p style="margin-bottom: 24px;">✓ Mekanik rotasi grid</p>
+                <p style="margin-top: 32px; color: #94a3b8;">Kembali ke menu...</p>
+            `;
+
+            // Insert into game screen
+            const gameBox = document.querySelector('.game-box');
+            gameBox.innerHTML = '';
+            gameBox.appendChild(message);
+
+            // Tunggu 3 detik lalu redirect ke main menu
+            await sleep(3000);
+            location.reload();
+        }
+
+        function endGame() {
+            gameState = 'gameOver';
+            stopTimer();
+            disableAllLights(true);
+            
+            // Untuk Round 3 & 4: tampilkan dengan rotasi yang sama saat bermain
+            // Untuk Round 1 & 2: tampilkan di 0° (default)
+            if (gameOverRound === 3 || gameOverRound === 4) {
+                gameGrid.style.transform = `rotate(${currentRotation}deg)`;
+            } else {
+                gameGrid.style.transform = 'rotate(0deg)';
+            }
+
+            // Tampilkan jawaban di grid dengan visual feedback
+            document.querySelectorAll('.light').forEach((light, index) => {
+                light.style.fontSize = '28px';
+                light.style.display = 'flex';
+                light.style.alignItems = 'center';
+                light.style.justifyContent = 'center';
+                light.style.fontWeight = 'bold';
+                
+                if (correctSequence.includes(index)) {
+                    if (gameOverRound === 1 || gameOverRound === 2) {
+                        // ROUND 1 & 2: Tampilkan urutan (1, 2, 3, dst)
+                        const position = correctSequence.indexOf(index) + 1;
+                        light.style.backgroundColor = '#22c55e';
+                        light.textContent = position;
+                        light.style.color = 'white';
+                    } else {
+                        // ROUND 3 & 4: Tampilkan centang
+                        light.style.backgroundColor = '#22c55e';
+                        light.textContent = '✓';
+                        light.style.color = 'white';
+                    }
+                } else {
+                    // Kotak yang salah - warna merah dengan X
+                    light.style.backgroundColor = '#ef4444';
+                    light.textContent = '✕';
+                    light.style.color = 'white';
+                }
+            });
+
+            // Buat catatan hasil bermain
+            let resultNotes = '<div style="margin-bottom: 12px; font-size: 12px; color: #cbd5e1; text-align: center;">';
+            resultNotes += '<strong style="color: #06b6d4;">⏱️ Waktu per Round:</strong><br>';
+            
+            const groupedByLevel = {};
+            roundTimes.forEach(entry => {
+                if (!groupedByLevel[entry.level]) {
+                    groupedByLevel[entry.level] = [];
+                }
+                groupedByLevel[entry.level].push(entry);
+            });
+            
+            Object.keys(groupedByLevel).forEach(lvl => {
+                const rounds = groupedByLevel[lvl];
+                const roundsStr = rounds.map(r => `R${r.round}(${r.time}s)`).join(' ');
+                resultNotes += `Level ${lvl}: ${roundsStr}<br>`;
+            });
+            
+            resultNotes += '</div>';
+
+            gameControls.innerHTML = `
+                <div class="game-over-box">
+                    <div class="game-over-label">💥 GAME OVER</div>
+                    <div class="game-over-score">Sampai Level</div>
+                    <div class="game-over-value">${level}</div>
+                </div>
+                ${resultNotes}
+                <button class="btn-primary" onclick="backToMenu()">BACK TO MENU</button>
+            `;
+        }
+
+        function backToMenu() {
+            // Reset statusText dulu
+            statusText.textContent = '';
+            
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('menuScreen').style.display = 'flex';
+            
+            // Reset gameControls content
+            gameControls.innerHTML = `
+                <button class="btn-primary" id="stopBtn" style="background: linear-gradient(90deg, #f87171, #ef4444); margin-top: 8px; display: none;" onclick="stopGame()">RESTART</button>
+            `;
+        }
+
+        // Initialize
+        createEmptyGrid();
+    </script>
+</body>
+</html>
