@@ -306,6 +306,21 @@
             }
         }
 
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .welcome-screen.fadeOut {
+            animation: fadeOut 0.8s ease-in-out forwards;
+        }
+
         .game-screen {
             display: none;
         }
@@ -2205,15 +2220,19 @@
         }
 
         function goToMenuFromWelcome() {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('menuScreen').style.display = 'flex';
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            welcomeScreen.classList.add('fadeOut');
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                document.getElementById('menuScreen').style.display = 'flex';
+            }, 800); // Match animation duration
         }
 
         // Initialize
         createEmptyGrid();
         
-        // Show welcome screen for 2 seconds then go to menu
-        setTimeout(goToMenuFromWelcome, 2000);
+        // Show welcome screen: 1s fade-in + 0.2s display + 0.8s fade-out = 2 seconds total
+        setTimeout(goToMenuFromWelcome, 1200);
     </script>
 </body>
 </html>
