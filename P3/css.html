@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animasi Sederhana</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .judul {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0 4px;
+            justify-content: center;
+        }
+
+        .column {
+            flex: 25%;
+            max-width: 25%;
+            padding: 0 4px;
+        }
+
+        .column img {
+            margin-top: 8px;
+            vertical-align: middle;
+            width: 100%;
+            animation-name: moveImage;
+            animation-duration: 2s;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+
+        @media(max-width: 800px) {
+            .column {
+                flex: 50%;
+                max-width: 50%;
+            }
+        }
+
+        @media(max-width: 600px) {
+            .column {
+                flex: 100%;
+                max-width: 100%;
+            }
+        }
+
+        @keyframes moveImage {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(200px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Judul -->
+    <div class="judul">
+        <h1>Halaman HTML Sederhana dengan Penerapan CSS</h1>
+        <p>Implementasi Flexbox untuk Membuat Layout Responsif dan Animasi Sederhana Menggunakan CSS</p>
+        <p>Nama : Bintang Syachriza Akbar</p>
+        <p>NIM : 230605110061</p>
+        <p>Matakuliah : Pemograman Web - F</p>
+        <p>____________________________________________________________________________________________________________________________________________________________________________________________
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="column">
+            <img src="Gambar/g1.jpg" style="width:100%">
+            <img src="Gambar/g2.jpg" style="width:100%">
+        </div>
+
+        <div class="column">
+            <img src="Gambar/g3.jpg" style="width:100%">
+            <img src="Gambar/g4.jpg" style="width:100%">
+        </div>
+
+        <div class="column">
+            <img src="Gambar/g5.jpg" style="width:100%">
+            <img src="Gambar/g6.jpg" style="width:100%">
+        </div>
+    </div>
+</body>
+
+</html>
