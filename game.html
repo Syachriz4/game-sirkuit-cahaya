@@ -276,6 +276,36 @@
             gap: 24px;
         }
 
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            min-height: 100vh;
+        }
+
+        .welcome-screen h1 {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #06b6d4, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .game-screen {
             display: none;
         }
@@ -287,6 +317,11 @@
 </head>
 <body>
     <div class="container">
+        <!-- WELCOME SCREEN -->
+        <div id="welcomeScreen" class="welcome-screen">
+            <h1>WELCOME TO<br>LIGHT CIRCUIT</h1>
+        </div>
+
         <div class="header">
             <h1>LIGHT CIRCUIT</h1>
             <p>Train Your Focus. Power Your Memory.</p>
@@ -2169,8 +2204,16 @@
             }
         }
 
+        function goToMenuFromWelcome() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('menuScreen').style.display = 'flex';
+        }
+
         // Initialize
         createEmptyGrid();
+        
+        // Show welcome screen for 2 seconds then go to menu
+        setTimeout(goToMenuFromWelcome, 2000);
     </script>
 </body>
 </html>
