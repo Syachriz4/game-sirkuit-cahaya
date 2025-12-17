@@ -303,7 +303,7 @@
         <div id="howToPlayScreen" class="game-screen" style="display: none; padding: 20px;">
             <div style="width: 100%; max-width: 600px; margin: 0 auto;">
                 <div style="text-align: center; margin-bottom: 24px;">
-                    <h2 style="color: #06b6d4; font-size: 28px; margin-bottom: 8px;">HOW TO PLAY</h2>
+                    <h2 style="color: #06b6d4; font-size: 32px; margin-bottom: 8px; font-weight: bold;">HOW TO PLAY</h2>
                     <p style="color: #94a3b8; font-size: 14px;">Pelajari cara bermain Light Circuit</p>
                 </div>
                 <div class="instructions" style="margin-top: 0;">
@@ -2150,11 +2150,13 @@
 
         function goToHowToPlay() {
             document.getElementById('menuScreen').style.display = 'none';
+            document.querySelector('.header').style.display = 'none';
             document.getElementById('howToPlayScreen').style.display = 'block';
         }
 
         function goToMenu() {
             document.getElementById('howToPlayScreen').style.display = 'none';
+            document.querySelector('.header').style.display = 'block';
             document.getElementById('menuScreen').style.display = 'flex';
         }
 
