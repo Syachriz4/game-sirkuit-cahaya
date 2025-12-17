@@ -2224,12 +2224,17 @@
             welcomeScreen.classList.add('fadeOut');
             setTimeout(() => {
                 welcomeScreen.style.display = 'none';
+                document.querySelector('.header').style.display = 'block';
                 document.getElementById('menuScreen').style.display = 'flex';
             }, 800); // Match animation duration
         }
 
         // Initialize
         createEmptyGrid();
+        
+        // Hide header and menu when showing welcome screen
+        document.querySelector('.header').style.display = 'none';
+        document.getElementById('menuScreen').style.display = 'none';
         
         // Show welcome screen: 1s fade-in + 0.2s display + 0.8s fade-out = 2 seconds total
         setTimeout(goToMenuFromWelcome, 1200);
