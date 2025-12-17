@@ -387,7 +387,7 @@
                     <p style="margin-left: 16px;">• Tekan tombol MULAI ULANG untuk kembali ke menu awal dan memulai permainan ulang.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button class="btn-primary" onclick="goToMenu()" style="width: 100%; padding: 16px; background: linear-gradient(90deg, #6b7280, #4b5563);">← KEMBALI KE MENU</button>
+                    <button class="btn-primary" onclick="goToMenuFromHowToPlay()" style="width: 100%; padding: 16px; background: linear-gradient(90deg, #6b7280, #4b5563);">← KEMBALI KE MENU</button>
                 </div>
             </div>
         </div>
@@ -2180,11 +2180,11 @@
                     <div class="game-over-value">${level}</div>
                 </div>
                 ${resultNotes}
-                <button class="btn-primary" onclick="backToMenu()">BACK TO MENU</button>
+                <button class="btn-primary" onclick="goToMenu()">BACK TO MENU</button>
             `;
         }
 
-        function backToMenu() {
+        function goToMenu() {
             // Reset statusText dulu
             statusText.textContent = '';
             
@@ -2204,7 +2204,7 @@
             document.getElementById('howToPlayScreen').style.display = 'block';
         }
 
-        function goToMenu() {
+        function goToMenuFromHowToPlay() {
             document.getElementById('howToPlayScreen').style.display = 'none';
             document.querySelector('.header').style.display = 'block';
             document.getElementById('menuScreen').style.display = 'flex';
